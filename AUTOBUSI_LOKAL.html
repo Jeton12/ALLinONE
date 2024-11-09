@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transporti Publik në Tetovë</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #map {
+            height: 500px;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        #info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .line-button {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .line-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Transporti Publik në Tetovë</h1>
+    <div id="info">
+        <label for="origin">Vendi i Pritjes:</label>
+        <select id="origin">
+            <option value="">-- Zgjidhni --</option>
+            <option value="stop1">SEEU</option>
+            <option value="stop2">ULTRA</option>
+            <option value="stop3">KORNERI</option>
+            <option value="stop4">GULF</option>
+            <option value="stop5">SHIPADI</option>
+            <option value="stop6">XHAMIA E PASHES</option>
+        </select>
+        <label for="destination">Destinacioni:</label>
+        <select id="destination">
+            <option value="">-- Zgjidhni --</option>
+            <option value="stop1">SEEU</option>
+            <option value="stop2">ULTRA</option>
+            <option value="stop3">KORNERI</option>
+            <option value="stop4">GULF</option>
+            <option value="stop5">SHIPADI</option>
+            <option value="stop6">XHAMIA E PASHES</option>
+        </select>
+        <button id="showLines">Shiko Linjat</button>
+    </div>
+    <div id="linesContainer" style="text-align: center; display: none;"></div>
+    <div id="map"></div>
+    
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([42.0053, 20.9735], 13); // Koordinatat për Tetovën
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // Koordinatat e ndalesave
+        const stops = {
+            stop1: [41.98965781433841, 20.959747051872924], // Stop 1  //SEEU
+            stop2: [41.990758194625194, 20.96005125827733], // Stop 2  //ULTRA
+            stop3: [41.99585629034819, 20.96107532276832], // Stop 3 //KORNERI
+            stop4: [41.998981829906505, 20.96171478897401],  // GULF
+
+            stop5: [42.005866843482536, 20.96750479789931],  // XHAMIA E PASHES
+
+            stopx: [41.98984206904058, 20.95965998068655], // seeu -- rruge
+            stopx1: [41.99020133025848, 20.9598701652786],  //ruge -- para rrethit
+            stopx2: [41.990276178551284, 20.960011017868336],   //  para rrethit -- cerek rreth
+            stopx3: [41.990427191624065, 20.96004454548015],   // cerek rreth -- cerek rreth
+            stopx4: [41.99053633946667, 20.959936586568173],    // cerek rreth -- dalje rrehit
+            stopx5: [41.99094352405274, 20.960002300690594], // stop 2 -- rruge
+            stopx6: [41.995747816584526, 20.960993223536935], //rruga prej stop 2 -- stop 3
+            stopx7: [41.996044703958695, 20.96105475976065], // stop3 -- rruge
+            stopx8: [41.99654061419632, 20.961180322935785], // rruge -- cerek rrethit
+            stopx9: [41.99665997201769, 20.961313252017668], // cerek rrethit -- cerek rreth
+            stopx10: [41.99676113568531, 20.961280394958525], // cerek rreth -- dalje rrethit
+            stopx11: [41.996842365510126, 20.961228762435823], // dalje rrethit -- rruge
+            stopx12 : [41.998792959695216, 20.961566853538674], // RRuge - GULF
+            stopx13 : [41.99907403662301, 20.961628757711914], // GULF -- RRUGE
+            stopx14 : [41.99932674929613, 20.961772193866068], //Rruge -- para rrethit
+            stopx15 : [41.999416447319994, 20.961902951554286],  // para rrethit -- cerek rrethi
+            stopx16 : [41.99957429922369, 20.961840024676192],  // cerek rrethit -- cerek rrethi
+            stopx17 : [41.99975350303317, 20.961746426095875],  // cerek rrethit -- dalje rrehit
+            stopx18 : [42.00099120674136, 20.96205264115916],  // dalje rrethit -- rruge
+            stopx19 : [42.00137390741769, 20.96222698474251],  // rruge -- rruge
+            stopx20 : [42.001664313095276, 20.962425995511243],  // rruge -- rruge
+            stopx21 : [42.00214844058629, 20.962848499260446], // rruge -- rruge
+            stopx22 : [42.00266812616589, 20.96334194279721], // rruge -- rruge
+            stopx23 : [42.0031470585215, 20.963851562507692], // rruge -- para rrethit
+            stopx24 : [42.00319190486168, 20.964011153950107], // para rethitt -- cerek rreth
+            stopx25 : [42.00343257965331, 20.96431424356475], // cerek rreth -- dalje rrethit
+            stopx26 : [42.00420967881704, 20.96561007137603], // rruge -- rruge
+            stopx27 : [42.00456684106002, 20.96607149527922], // rruge -- rruge
+            stopx28 : [42.00574477984063, 20.9672922160146], // rruge -- rruge
+            stopx29 : [42.00602378210639, 20.96758624160894], // rruge -- rruge
+            stopx30 : [42.00673314344482, 20.968195702377155], // rruge -- rruge
+            stopx31 : [42.00718548874403, 20.968662278210264],
+            stopx32 : [42.00799983745281, 20.96948883832742],
+            stopx33 : [42.00852563366204, 20.970039735522473],
+            stopx34 : [42.008969581054444, 20.970520940947722],
+            stopx35 : [42.009567786094294, 20.971209656013073],
+            stopx36 : [42.009051864831, 20.97234710713249],
+            stopx37 : [42.00876285293581, 20.97291357665795],
+            stopx38 : [42.00866711624213, 20.97297604650177],
+            stopx39 : [42.00863157758276, 20.97321616502975],
+            stopx40 : [42.008479268819315, 20.97351777730115],
+            stopx41 : [42.00806489251561, 20.974549160605488],
+            stopx42 : [42.00745717166241, 20.976338879034376],
+
+            stopx43 : [42.00735315356174, 20.97640885500622],
+            stopx44 : [42.007303937793225, 20.976567003000927],
+            stopx45 : [42.00733333514013, 20.976689714067668],
+            stopx46 : [42.00614189644773, 20.980144633706487],
+            stopx47 : [42.00599367692035, 20.980246093242535],
+            stopx48 : [42.00592700366345, 20.98044142010259],
+            stopx49 : [42.00597008485254, 20.980669876617746],
+            stopx50 : [],
+
+        };
+        
+        const stopNames = {
+            stop1: "SEEU",
+            stop2: "ULTRA",
+            stop3: "KORNERI",
+            stop4: "GULF",
+            stop5: "XHAMIA E PASHES",
+           
+        };
+
+
+        // Linjat dhe destinacionet përkatëse
+        const lines = {
+            //SEEU --
+            line1: {
+                stops: [stops.stop1, stops.stopx, stops.stopx1, stops.stopx2, stops.stopx3, stops.stopx4, stops.stop2, stops.stopx5, stops.stopx6, stops.stop3, stops.stopx7, stops.stopx8, stops.stopx9, stops.stopx10, stops.stopx11, stops.stopx12,
+                 stops.stop4,  stops.stopx13, stops.stopx14, stops.stopx15, stops.stopx16,stops.stopx17, stops.stopx18, stops.stopx19 , stops.stopx20, stops.stopx21, stops.stopx22,    
+                 stops.stopx23, stops.stopx24, stops.stopx25, stops.stopx26, stops.stopx27, stops.stopx28, stops.stop5, stops.stopx29, stops.stopx30, stops.stopx31, stops.stopx32 , stops.stopx33  , stops.stopx34  , stops.stopx35 ,
+                stops.stopx36, stops.stopx37, stops.stopx38, stops.stopx39, stops.stopx40, stops.stopx41, stops.stopx42 , stops.stopx43 , stops.stopx44 , stops.stopx45  , stops.stopx46, stops.stopx47, stops.stopx48, stops.stopx49],
+                destinations: [stops.stop2, stops.stop3, stops.stop4,  stops.stop5, stops.stop6]
+            },
+            //SEEU -- ULTRA
+            SEEU__ULTRA: {
+                stops: [stops.stop1, stops.stopx, stops.stopx1, stops.stopx2, stops.stopx3, stops.stopx4, stops.stop2],
+                destinations: [stops.stop2,]
+            },
+            
+         
+        };
+
+        let markers = [];
+        let polyline;
+
+        document.getElementById('showLines').addEventListener('click', function() {
+            const destination = document.getElementById('destination').value;
+
+            // Pastroni linjat e mëparshme
+            markers.forEach(marker => map.removeLayer(marker));
+            if (polyline) map.removeLayer(polyline);
+            markers = [];
+
+            // Shfaq linjat në katrorë
+            const linesContainer = document.getElementById('linesContainer');
+            linesContainer.innerHTML = '';
+            linesContainer.style.display = 'block';
+
+            Object.keys(lines).forEach(line => {
+                // Kontrollo nëse linja ka destinacionin e zgjedhur
+                if (lines[line].destinations.includes(stops[destination])) {
+                    const button = document.createElement('button');
+                    button.className = 'line-button';
+                    button.innerText = line.charAt(0).toUpperCase() + line.slice(1);
+                    button.onclick = () => showLine(line);
+                    linesContainer.appendChild(button);
+                }
+            });
+        });
+
+        function showLine(selectedLine) {
+            // Pastroni markerat dhe linjat e mëparshme
+            markers.forEach(marker => map.removeLayer(marker));
+            if (polyline) map.removeLayer(polyline);
+            markers = [];
+
+    
+
+
+
+
+            // Shtoni markerat për linjën e zgjedhur, duke anashkaluar stop4
+            lines[selectedLine].stops.forEach((point, index) => {
+                if (point !== stops.stopx && point !==stops.stopx1 && point !==stops.stopx2 && point !==stops.stopx3 && point !==stops.stopx4 && point !==stops.stopx5 && point !==stops.stopx6 && point !==stops.stopx7 && 
+                point !==stops.stopx8 && point !==stops.stopx9 && point !==stops.stopx10 && point !==stops.stopx11 && point !==stops.stopx12 && point !==stops.stopx13 && point !==stops.stopx14 
+                && point !==stops.stopx15 && point !==stops.stopx16 && point !==stops.stopx17 && point !==stops.stopx18 && point !==stops.stopx19 && point !==stops.stopx20 && point !==stops.stopx21 && point !==stops.stopx22 && point !==stops.stopx23
+                && point !==stops.stopx24 && point !==stops.stopx25 && point !==stops.stopx26 && point !==stops.stopx27 && point !==stops.stopx28 && point !==stops.stopx29 && point !==stops.stopx30 && point !==stops.stopx31 && point !==stops.stopx32 
+                && point !==stops.stopx33 && point !==stops.stopx34 && point !==stops.stopx35 && point !==stops.stopx36 && point !==stops.stopx37 && point !==stops.stopx38 && point !==stops.stopx39 && point !==stops.stopx40 && point !==stops.stopx41 && point !==stops.stopx42
+                && point !==stops.stopx43 && point !==stops.stopx44 && point !==stops.stopx45 && point !==stops.stopx46 && point !==stops.stopx47 && point !==stops.stopx48 && point !==stops.stopx49 && point !==stops.stopx50
+            ) { // Anashkalo MARKERAT
+                    const marker = L.marker(point).addTo(map);
+                    markers.push(marker);
+                    // Shto popup me emrin e ndalesës
+                    const stopKey = Object.keys(stops).find(key => stops[key][0] === point[0] && stops[key][1] === point[1]);
+                    marker.bindPopup(`Ndalesa: ${stopNames[stopKey]}`);
+                }
+            });
+
+            // Vizato linjën
+            polyline = L.polyline(lines[selectedLine].stops, { color: 'black', weight: 4 }).addTo(map);
+            map.fitBounds(polyline.getBounds());
+        }
+    </script>
+</body>
+</html>

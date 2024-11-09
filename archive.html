@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flip Cards with Zoom Effect</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .card-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 20px;
+    }
+
+    /* Styling for flip card */
+    .flip-card {
+      background-color: transparent;
+      width: 11.5em;
+      height: 11.5em;
+      perspective: 1000px;
+      margin: 10px;
+      transition: transform 0.3s ease-in-out;
+      cursor: pointer;
+    }
+
+    /* Flip card inner */
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Hover effect for flip card */
+    .flip-card:hover .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+
+    /* Flip card front and back */
+    .flip-card-front, .flip-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 25px;
+    }
+
+    .flip-card-front {
+      background-color: #ffffff;
+      color: black;
+    }
+
+    .flip-card-back {
+      background-color: #2980b9;
+      color: white;
+      transform: rotateY(180deg);
+    }
+
+    /* Style for zoom and move to right on click */
+    .zoomed {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(6); /* Zoom in and center */
+      z-index: 10;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      transition: transform 0.6s ease-in-out;
+    }
+
+    /* Modal or redirection page */
+    .info-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      max-width: 400px;
+      z-index: 15;
+    }
+
+    .info-modal h2 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    .info-modal p {
+      margin: 10px 0;
+      color: #555;
+    }
+
+    .info-modal button {
+      padding: 10px 20px;
+      background-color: #2980b9;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .info-modal button:hover {
+      background-color: #1c6ea4;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card-container">
+    <!-- Card 1 -->
+    <div class="flip-card" onclick="zoomIn(this)">
+      <div class="flip-card-inner">
+        <div class="flip-card-front">
+          <img src="https://via.placeholder.com/65" alt="Avatar" style="width: 65px; height: 65px;">
+          <h2>BOCATA</h2>
+        </div>
+        <div class="flip-card-back">
+          <h1>BOCATA</h1>
+          <p>Ushqimet me te mira ne qytet</p>
+          <p>Kliko per te hyre te bocata</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="flip-card" onclick="zoomIn(this)">
+      <div class="flip-card-inner">
+        <div class="flip-card-front">
+          <img src="https://via.placeholder.com/65" alt="Avatar" style="width: 65px; height: 65px;">
+          <h2>BOCATA</h2>
+        </div>
+        <div class="flip-card-back">
+          <h1>John Doe</h1>
+          <p>Architect & Engineer</p>
+          <p>We love that guy</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Modal (used for page redirection or information) -->
+  <div class="info-modal" id="infoModal">
+    <h2>Page Information</h2>
+    <p>This is additional information about the selected card.</p>
+    <button onclick="redirectToPage()">Go to Page</button>
+  </div>
+
+  <script>
+    let selectedCard = null;
+
+    // Function to zoom and move the card to right on click
+    function zoomIn(card) {
+      // Remove zoom effect from previous card if any
+      if (selectedCard) {
+        selectedCard.classList.remove('zoomed');
+      }
+
+      // Add zoom effect to the clicked card
+      card.classList.add('zoomed');
+      selectedCard = card;
+
+      // Show the info modal
+      showModal();
+    }
+
+    // Function to show the modal
+    function showModal() {
+      const modal = document.getElementById('infoModal');
+      modal.style.display = 'block';
+      setTimeout(function() {
+        window.location.href = 'https://example.com';
+      }, 4000); // Redirect after a small delay
+    }
+
+    // Function to close the modal and redirect to another page
+    function redirectToPage() {
+      const modal = document.getElementById('infoModal');
+      modal.style.display = 'none';
+    
+      // Redirect to another page or open a new window
+      window.location.href = 'https://example.com'; // Change this to your desired URL
+    }
+
+    // Close modal when clicked outside (optional)
+    window.onclick = function(event) {
+      const modal = document.getElementById('infoModal');
+      if (event.target === modal) {
+        modal.style.display = 'none';
+        if (selectedCard) {
+          selectedCard.classList.remove('zoomed');
+          selectedCard = null;
+        }
+      }
+    };
+  </script>
+
+</body>
+</html>

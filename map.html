@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harta e Tetovës</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            height: 100vh;
+        }
+        #header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        #menu {
+            width: auto;
+            background-color: #fff;
+            padding: 10px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            text-align: center;
+        }
+        h3 {
+            text-align: left;
+        }
+        #map {
+            height: 200px; 
+            width: auto; /* Zvogëlon lartësinë e hartës për headerin */
+            flex: 1;
+        }
+        .restaurant-icon {
+            font-size: 20px; /* Madhësia e ikonës */
+            color: red; /* Ngjyra e ikonës */
+        }
+        .drink-icon{
+            font-size: 20px;
+            color: blue;
+        }
+        .red-dot, .blu-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+        .red-dot {
+            background-color: red;
+        }
+        .blu-dot {
+            background-color: blue;
+        }
+        span {
+            margin-left: 15px;
+        }
+        a:hover {
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>Harta e Tetovës</h1>
+    </div>
+    <div id="menu">
+        <h2>Ndrysho Mapin</h2>
+        <hr>
+        <h2>Legjenda</h2>
+        <ul>
+            <h3>
+                <span class="red-dot"></span>
+                <a href="https://example.com/ndertimtarite" style="text-decoration: none; color: inherit;">Restorante</a>
+                <span class="blu-dot"></span>
+                <a href="C:\\Users\\jeton\\Desktop\\ALLinONE\\map_kafeterit.html" style="text-decoration: none; color: inherit;">Kafeterit</a>
+            </h3>
+        </ul>
+    </div>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Krijo hartën
+        var map = L.map('map').setView([42.010011817089, 20.97175839871173], 13);
+
+        // Shto një shtresë të hartës
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 20,
+            attribution: '© HARTA E TETOVES'
+        }).addTo(map);
+
+        // Koordinatat për vendet e specifikuara
+        var locations = [
+            { name: 'BOCATA', coords: [42.00759277210253, 20.97551234848854], type: 'restaurant'},
+            { name: 'SACH', coords: [42.00768639208142, 20.975009970412252], type: 'restaurant' },
+            { name: 'NAPOLI', coords: [42.00859272848502, 20.97405684896505], type: 'restaurant' },
+            { name: 'BOSS', coords: [41.99766919207347, 20.96114286842349] , type: 'restaurant'},
+            { name: 'PARAJSA E SHARRIT', coords: [42.01121316854506, 20.91926478240804], type: 'restaurant' },
+            { name: 'BAKAL', coords: [41.968780373300554, 20.979388893557253] , type: 'restaurant'},
+            { name: 'DANTE', coords: [42.009010022559565, 20.978164095409976] , type: 'restaurant'},
+            { name: 'DELFIN', coords: [42.008757779072496, 20.973679866574148] , type: 'restaurant'},
+            { name: 'DRIADA', coords: [42.01851522040784, 20.936161402810747] , type: 'restaurant'},
+            { name: 'EMA', coords: [41.99722899306636, 21.011965466573447] , type: 'restaurant'},
+            { name: 'FRATELLI', coords: [42.009618140286044, 20.97617105308138], type: 'restaurant' },
+            { name: 'GRAND', coords: [42.008032952103996, 20.97444857085589] , type: 'restaurant'},
+            { name: 'KURTISHI', coords: [41.99859695273534, 20.95246071466739] , type: 'restaurant'},
+            { name: 'KURTISHI 2', coords: [42.01715280421246, 20.979021010147108] , type: 'restaurant'},
+            { name: 'LA GONDOLA', coords: [42.02060909385453, 20.977714093316933] , type: 'restaurant'},
+            { name: 'MOLINO', coords: [41.99171447364698, 20.959723837737343], type: 'restaurant' },
+            { name: 'PEPPERONI', coords: [42.00833466509659, 20.969363128408297] , type: 'drink'},
+            { name: 'PUNTO VERDE', coords: [42.00962276511089, 20.97590939540998] , type: 'restaurant'},
+            { name: 'SALT', coords: [42.01101733858573, 20.970330332753587] , type: 'restaurant'},
+            { name: 'SEDRA', coords: [42.00760496468002, 20.977079551231203] , type: 'drink'},
+
+
+            
+        ];
+
+        // Shto ikona e restorantit në hartë me tooltip
+        var markers = locations.map(function(location) {
+            var iconClass = location.type === 'drink' ? 'drink-icon' : 'restaurant-icon';
+            return L.marker(location.coords, {
+                icon: L.divIcon({
+                    className: iconClass,
+                    html: location.type === 'drink' ? '<i class="fas fa-glass-martini"></i>' : '<i class="fas fa-utensils"></i>',
+                    iconSize: [20, 20]
+                })
+            }).addTo(map)
+              .bindTooltip(location.name, { permanent: true, direction: 'right', offset: L.point(10, 0) });
+        });
+
+        // Funksioni për të kontrolluar zoom-in
+        function updateMarkersVisibility() {
+            var currentZoom = map.getZoom();
+            markers.forEach(function(marker) {
+                if (currentZoom > 13) { // Zmadhimi minimal për të shfaqur ikonat
+                    marker.addTo(map); // Shfaq ikonat
+                } else {
+                    map.removeLayer(marker); // Fshi ikonat
+                }
+            });
+        }
+
+        // Ngjarja e zoom-it
+        map.on('zoomend', updateMarkersVisibility);
+
+        // Thirret fillimisht për të vendosur gjendjen e duhur
+        updateMarkersVisibility();
+    </script>
+</body>
+</html>
